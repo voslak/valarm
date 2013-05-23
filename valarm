@@ -1,29 +1,58 @@
 #!/bin/bash
 
+VALARM_NAME=valarm
+VALARM_VER=0.0.2
+
+nofit_cnt=0
+
+function valarm_usage {
+    echo Usage:$VALARM_NAME '<time>' '<music type>'
+    if [ -n "$1" ]; then
+	exit "$1"
+    fi
+}
+
+function valarm_play_music {
+
+    sleep "$1"
+    case $2 in
+	di)
+	    mplayer -playlist url"$2".pls > /dev/null 2>&1 &
+	    ;;
+	*)
+	    ;;
+    esac
+	
+}
+
 if [ -z "$1" ];
 then
-    echo You have to specify time in 'date' format to wake up.
-    echo Ex.
-    echo ./alarm 0807 trance
-    echo will set alarm to 20:07 and play trance music.
-    echo If you want to set for the next day etc. just use:
-    echo ./alarm 'tomorrow 0914' chillout
-    echo for more info just 'man date'
-    echo Exiting.
-    exit -1
+    valarm_usage -1
 fi
 
-if [ -z "$2" ];
-then
-    echo Following music types are supported:
-    echo trance, vocaltrance, chillout, house, electro.
-    echo Specify music type as second parameter for the program:
-    echo Ex.
-    echo ./alarm 'tomorrow 0800' chillout
-    echo Exiting
-    exit -2
-fi
-
+for i in $@; do
+    case $i in
+	--version)
+	    echo $VALARM_NAME $VALARM_VER
+	    echo Copyright '(C)' 2013 SEITAZ
+	    echo License GPLv3+: GNU GPL version 3 or later '<http://gnu.org/licenses/gpl.html>'
+	    echo This is free software: you are free to change and redistribute it.
+	    echo There is NO WARRANTY, to the extent permitted by law.
+	    exit 0
+	    ;;
+	--help)
+	    valarm_usage
+	    echo Report bugs to: '<http://github.com/voslak/valarm/issues>'
+	    echo $VALARM_NAME home page: '<http://github.com/voslak/valarm>'
+	    echo General help using GNU software: '<http://www.gnu.org/gethelp/>'
+	    exit 0
+	    ;;
+	*)
+	    let nofit_cnt++
+    	    ;;
+    esac
+done
+ 
 sec_future=$(date -d "$1" +%s)
 sec_now=$(date +%s)
 ((sec_sleep = $sec_future - $sec_now))
@@ -35,29 +64,33 @@ fi
 
 case $2 in
     trance)
-	(sleep $sec_sleep; mplayer -playlist http://listen.di.fm/public3/trance.pls) &
+	(sleep $sec_sleep; mplayer -playlist http://listen.di.fm/public3/trance.pls > /dev/null 2>&1) &
 	;;
 
     vocaltrance)
-	(sleep $sec_sleep; mplayer -playlist http://listen.di.fm/public3/vocaltrance.pls) &
+	(sleep $sec_sleep; mplayer -playlist http://listen.di.fm/public3/vocaltrance.pls > /dev/null 2>&1) &
 	;;
 
     chillout)
-	(sleep $sec_sleep; mplayer -playlist http://listen.di.fm/public3/chillout.pls) &
+	(sleep $sec_sleep; mplayer -playlist http://listen.di.fm/public3/chillout.pls > /dev/null 2>&1) &
 	;;
 
     house)
-	(sleep $sec_sleep; mplayer -playlist http://listen.di.fm/public3/house.pls) &
+	(sleep $sec_sleep; mplayer -playlist http://listen.di.fm/public3/house.pls > /dev/null 2>&1) &
 	;;
 
     electro)
-	(sleep $sec_sleep; mplayer -playlist http://listen.di.fm/public3/electro.pls) &
+	(sleep $sec_sleep; mplayer -playlist http://listen.di.fm/public3/electro.pls > /dev/null 2>&1) &
 	;;
     rzg)
-	(sleep $sec_sleep; mplayer -playlist http://rzg.pl/player/rz.m3u) &
+	(sleep $sec_sleep; mplayer -playlist http://rzg.pl/player/rz.m3u > /dev/null 2>&1) &
 	;;
     *)
-	(sleep $sec_sleep; mplayer /home/pi/music/*$2*) &
+	if [ "$nofit_cnt" = "$i" ]; then
+	    (sleep $sec_sleep; mplayer /home/pi/music/*$2* > /dev/null 2>&1) &
+	else
+	    valarm_usage -1
+	fi
 	;;
 esac
 
