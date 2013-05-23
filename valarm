@@ -1,0 +1,70 @@
+#!/bin/bash
+
+if [ -z "$1" ];
+then
+    echo You have to specify time in 'date' format to wake up.
+    echo Ex.
+    echo ./alarm 0807 trance
+    echo will set alarm to 20:07 and play trance music.
+    echo If you want to set for the next day etc. just use:
+    echo ./alarm 'tomorrow 0914' chillout
+    echo for more info just 'man date'
+    echo Exiting.
+    exit -1
+fi
+
+if [ -z "$2" ];
+then
+    echo Following music types are supported:
+    echo trance, vocaltrance, chillout, house, electro.
+    echo Specify music type as second parameter for the program:
+    echo Ex.
+    echo ./alarm 'tomorrow 0800' chillout
+    echo Exiting
+    exit -2
+fi
+
+sec_future=$(date -d "$1" +%s)
+sec_now=$(date +%s)
+((sec_sleep = $sec_future - $sec_now))
+
+if [ "$sec_sleep" -le -1 ]
+then
+    ((sec_sleep = $sec_sleep +(60*60*24)))
+fi
+
+case $2 in
+    trance)
+	(sleep $sec_sleep; mplayer -playlist http://listen.di.fm/public3/trance.pls) &
+	;;
+
+    vocaltrance)
+	(sleep $sec_sleep; mplayer -playlist http://listen.di.fm/public3/vocaltrance.pls) &
+	;;
+
+    chillout)
+	(sleep $sec_sleep; mplayer -playlist http://listen.di.fm/public3/chillout.pls) &
+	;;
+
+    house)
+	(sleep $sec_sleep; mplayer -playlist http://listen.di.fm/public3/house.pls) &
+	;;
+
+    electro)
+	(sleep $sec_sleep; mplayer -playlist http://listen.di.fm/public3/electro.pls) &
+	;;
+    rzg)
+	(sleep $sec_sleep; mplayer -playlist http://rzg.pl/player/rz.m3u) &
+	;;
+    *)
+	(sleep $sec_sleep; mplayer /home/pi/music/*$2*) &
+	;;
+esac
+
+echo ======================================================
+echo $2 will wake you up $(date -d "$1")!
+echo "Exiting."
+echo ======================================================
+
+exit 0
+
