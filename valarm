@@ -1,7 +1,11 @@
 #!/bin/bash
 
 VALARM_NAME=valarm
-VALARM_VER=0.0.2
+VALARM_VER=0.0.3
+
+MUSIC_PATH=/home/pi/music/
+DI_URL=http://listen.di.fm/public3/
+LUB_URL=http://rzg.pl/player/
 
 nofit_cnt=0
 
@@ -14,12 +18,21 @@ function valarm_usage {
 
 function valarm_play_music {
 
-    sleep "$1"
     case $2 in
 	di)
-	    mplayer -playlist url"$2".pls > /dev/null 2>&1 &
+	    (sleep $1; mplayer -playlist $DI_URL$3.pls > /dev/null 2>&1) &
 	    ;;
+
+	lub)
+	    (sleep $1; mplayer -playlist $LUB_URL$3.m3u > /dev/null 2>&1) &
+	    ;;
+
+	mp3)
+	    (sleep $1; mplayer $MUSIC_PATH*$3* > /dev/null 2>&1) &
+            ;;
+
 	*)
+	    valarm_usage -3
 	    ;;
     esac
 	
@@ -63,34 +76,22 @@ then
 fi
 
 case $2 in
-    trance)
-	(sleep $sec_sleep; mplayer -playlist http://listen.di.fm/public3/trance.pls > /dev/null 2>&1) &
-	;;
-
-    vocaltrance)
-	(sleep $sec_sleep; mplayer -playlist http://listen.di.fm/public3/vocaltrance.pls > /dev/null 2>&1) &
-	;;
-
-    chillout)
-	(sleep $sec_sleep; mplayer -playlist http://listen.di.fm/public3/chillout.pls > /dev/null 2>&1) &
-	;;
-
-    house)
-	(sleep $sec_sleep; mplayer -playlist http://listen.di.fm/public3/house.pls > /dev/null 2>&1) &
-	;;
-
+    trance)      ;&
+    vocaltrance) ;&
+    chillout)    ;&
+    house)       ;&
     electro)
-	(sleep $sec_sleep; mplayer -playlist http://listen.di.fm/public3/electro.pls > /dev/null 2>&1) &
+	valarm_play_music $sec_sleep di $2
 	;;
-    rzg)
-	(sleep $sec_sleep; mplayer -playlist http://rzg.pl/player/rz.m3u > /dev/null 2>&1) &
+
+    rzg) ;&
+    rz)  ;&
+    rg)
+	valarm_play_music $sec_sleep lub $2
 	;;
+
     *)
-	if [ "$nofit_cnt" = "$i" ]; then
-	    (sleep $sec_sleep; mplayer /home/pi/music/*$2* > /dev/null 2>&1) &
-	else
-	    valarm_usage -1
-	fi
+	valarm_play_music $sec_sleep mp3 $2
 	;;
 esac
 
